@@ -1,17 +1,55 @@
-# Herramienta de Apoyo para Equipo de Voleibol
+# VolleyTool CR 🏐
 
-Prompt:
-Quiero brindar apoyo al voleibol de mi país (Costa Rica), para eso quiero elaborar una herramienta que permita registrar información relevante de cada equipo y sus jugadores. La idea es brindarle a la comunidad de voleibol en Costa Rica una herramienta que les permita
+Herramienta para la comunidad de voleibol de Costa Rica. Su objetivo es que equipos, jugadores, cuerpo técnico y afición puedan:
 
-1. Registrar información relevante de su rendimiento en la cancha tanto a equipos como a jugadores.
-2. Perimitirle a los equipos llevar un control más centralizado de sus jugadores y las características de estos.
-3. Brindarle una herramienta a jugadores y cuerpo técnico que les permita obtener información del rendimiento en cancha de los rivales.
-4. Centralizar información y contenido a la comunidad de voleibol de Costa Rica.
+1. **Registrar el rendimiento en cancha** de equipos y jugadores (estadísticas por partido, por set y por rotación).
+2. **Centralizar el control de las plantillas**: ficha completa de cada jugador (nombre, cédula, fecha de nacimiento, tipo de sangre, altura, peso, lateralidad, posición y métricas físicas como el salto vertical, que se sincronizarán con **Spike Performance**).
+3. **Hacer scouting de los rivales** con sus estadísticas y las grabaciones de sus partidos.
+4. **Centralizar información y contenido** de la comunidad: noticias, agenda, transmisiones en vivo y videoteca.
 
-La herramienta le permitirá a cada equipo registrar estadísticas de sus partidos como porcentaje de saques exitosos, porcentaje de aces, efectividad del ataque por cada rotación... etc. (Estas características se podrían especificar mejor luego).
+## Demo
 
-Los equipos también podrán llevar un registro de los jugadores que los integran. Cada jugador se guardará con las siguientes características: nombre completo, número de cédula, fecha de nacimiento, tipo de sangre, altura en cm, peso en kg, lateralidad, posición en la que juega, y otras métricas físicas como el salto vertical máximo y demás (tengo pensado implementar esto con otra herramienta llamada Spike Performance, pero de esto podríamos hablar luego...)
+Este repositorio contiene la **demo conceptual** para presentar la idea a entrenadores, jugadores y aficionados, y validar las funcionalidades antes de definir la arquitectura final.
 
-La herramienta también le permitirá a los equipos transmitir sus partidos y guardar las grabaciones de estos para que otros equipos puedan accederlas y prepararse para enfrentarlos. Aficionados del voleibol podrán ver estas transmisiones y grabaciones desde su teléfono.
+Es una aplicación web estática sin dependencias (HTML + CSS + JavaScript). **Todos los datos son ficticios** y se generan de forma determinista para que la demo siempre se vea igual.
 
-De momento quiero que implementes una demo de esta aplicación para enseñarla a algunos miembros de la comunidad y así poder sentar un poco más mis ideas sobre las funcionalidades de esta herramienta. Luego de sacar conclusiones a partir de esta demo hablaremos sobre la arquitectura de la aplicación, las tecnologías que la conformarán y su implementación completa.
+### Cómo ejecutarla
+
+Opción 1 — doble clic en `index.html` (funciona sin servidor).
+
+Opción 2 — con un servidor local:
+
+```
+python -m http.server 8123
+# luego abrir http://localhost:8123
+```
+
+Es responsive: se puede enseñar desde el teléfono, una tableta o la computadora.
+
+### Qué incluye
+
+| Sección | Qué demuestra |
+| --- | --- |
+| **Inicio** | Resumen de la liga: partido en vivo, próximos partidos, tablas de posiciones y noticias. |
+| **Equipos** | Perfil de cada club: plantilla, estadísticas del torneo, partidos y grabaciones. Incluye el formulario para registrar jugadores con su ficha completa. |
+| **Jugador** | Ficha personal, métricas físicas (integración futura con Spike Performance) y radar de habilidades. |
+| **Partidos** | Resultados con marcador por set, estadísticas comparadas y efectividad de ataque por rotación (R1–R6). |
+| **Captura en vivo** | La planilla digital: registrar cada acción (saque, ataque, bloqueo, recepción) por rotación y jugador, con porcentajes al instante. Lo capturado se guarda en el navegador (`localStorage`). |
+| **Videos** | Transmisión en vivo simulada y videoteca de grabaciones por partido. |
+| **Scouting** | Comparador de dos equipos con informe automático: rotación más fuerte/débil, jugadores a vigilar y grabaciones del rival. |
+| **Comunidad** | Noticias, agenda y la lista de lo que vendría en la versión completa. |
+
+El botón **«Restablecer demo»** (pie de página) borra los jugadores y partidos registrados durante una presentación.
+
+### Estructura
+
+```
+index.html        Estructura de la página y navegación
+css/styles.css    Estilos (tema oscuro deportivo, responsive)
+js/data.js        Datos ficticios de demostración (equipos, jugadores, partidos, videos, noticias)
+js/app.js         Lógica: vistas, enrutado, captura en vivo, gráficos SVG y almacenamiento local
+```
+
+## Próximos pasos
+
+Con las conclusiones de la demo se definirán la arquitectura, las tecnologías y el plan de implementación de la versión completa (cuentas por club, captura por jugador, transmisión real de video, integración con Spike Performance, gestión de torneos).
