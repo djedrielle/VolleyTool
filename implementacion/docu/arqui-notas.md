@@ -4,6 +4,8 @@ acá aparecerán en la documentación final.)
 
 ## Arquitectura
 Monolito modular, con tres dominios independientes: "Metrics", "Streaming" y "On-demand".
+Este es un primer vistazo al diseño del dominio Metrics:
+![Diseño Metrics](./figs/metrics_arquitecture_v1.jpg)   
 
 ## DataBase
-[Esta es la estructura inicial de la base de datos del dominio Metrics.](./figs/metrics_db.pdf)
+![Esta es la estructura inicial de la base de datos del dominio Metrics.](./figs/metrics_db.jpg)
