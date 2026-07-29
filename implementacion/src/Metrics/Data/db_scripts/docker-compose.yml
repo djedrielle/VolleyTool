@@ -1,0 +1,44 @@
+# VolleyTool CR — Base de datos del dominio Metrics
+#
+# Levanta un Postgres con el esquema de Metrics ya cargado.
+# El script *.sql de esta carpeta se ejecuta automaticamente la
+# PRIMERA vez que se crea el volumen (Postgres corre en orden
+# alfabetico todo lo que encuentre en /docker-entrypoint-initdb.d).
+#
+#   docker compose up -d        arranca en segundo plano
+#   docker compose logs -f db   ver el arranque y la carga del script
+#   docker compose down         detener (conserva los datos)
+#   docker compose down -v      detener y BORRAR los datos (para
+#                               recargar el script desde cero)
+#
+# Los valores por defecto sirven para desarrollo local. Para
+# cambiarlos, copiar .env.example a .env y editarlo.
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: volleytool-metrics-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-volleytool}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-volleytool_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-volleytool}
+    ports:
+      # host:contenedor — cambiar el lado izquierdo si el 5432
+      # local ya esta ocupado por otro Postgres.
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - metrics_pgdata:/var/lib/postgresql/data
+      # Los scripts se montan de solo lectura. Postgres solo ejecuta
+      # los .sql/.sh; el propio docker-compose.yml y el .env se ignoran.
+      - ./:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-volleytool} -d ${POSTGRES_DB:-volleytool}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  metrics_pgdata:
+    name: volleytool_metrics_pgdata
