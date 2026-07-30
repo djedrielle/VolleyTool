@@ -31,3 +31,6 @@ Contiene lo siguiente:
 
 ## DataBase
 ![Esta es la estructura inicial de la base de datos del dominio Metrics.](./figs/metrics_db.jpg)
+
+## Core
+Core es el dominio que guarda las entidades compartidas por toda la plataforma: los equipos, los jugadores, el cuerpo técnico, los torneos, los partidos y las inscripciones (plantillas), junto con la identidad de los usuarios y sus roles. No es "lo más importante" de la aplicación, sino el catálogo neutral que los demás dominios necesitan referenciar: una métrica es de un jugador, una transmisión es de un partido, y ese jugador y ese partido viven en Core. Sigue la misma estructura de tres capas que Metrics (Controllers, Logic y Data): la administración del catálogo y la identidad viven en `Logic`, y cada entidad atraviesa las capas de dominio, servicio y repositorio hasta su controlador.
