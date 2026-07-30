@@ -1,4 +1,10 @@
-// Definiciones de tablas Drizzle del dominio Core: equipo, jugador,
-// cuerpo_tecnico, torneo, partido, partido_equipo, plantilla,
-// plantilla_tecnico e identidad. Pendiente de definir.
-export {};
+// Definiciones de tablas Drizzle del dominio Core.
+export * from './_schema.js';
+export * from './equipo.js';
+export * from './jugador.js';
+export * from './cuerpo-tecnico.js';
+export * from './torneo.js';
+export * from './partido.js';
+export * from './partido-equipo.js';
+export * from './plantilla.js';
+export * from './plantilla-tecnico.js';
