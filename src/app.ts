@@ -2,6 +2,7 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import { autenticar } from './shared/http/auth.js';
 import { ErrorValidacion, NoEncontrado } from './shared/errors.js';
 import { registrarCore } from './Core/index.js';
+import { registrarMetrics } from './Metrics/index.js';
 
 // postgres.js expone el SQLSTATE en `.code`, pero Drizzle envuelve el
 // error del driver y lo deja en `.cause`. Recorremos la cadena de causas
@@ -49,7 +50,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   configurarApp(app);
   app.get('/health', async () => ({ status: 'ok' }));
   await registrarCore(app);
-  // await registrarMetrics(app);  // cuando exista
+  await registrarMetrics(app);
 
   return app;
 }
