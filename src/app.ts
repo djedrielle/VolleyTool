@@ -36,6 +36,8 @@ export function configurarApp(app: FastifyInstance): void {
         return reply.code(400).send({ error: 'Referencia inválida: el recurso relacionado no existe.' });
       case '23514':
         return reply.code(400).send({ error: 'Algún valor está fuera de los límites permitidos.' });
+      case '22P02':
+        return reply.code(400).send({ error: 'Identificador con formato inválido.' });
     }
 
     req.log.error(err);
