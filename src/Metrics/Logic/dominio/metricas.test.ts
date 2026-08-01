@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { contar, contarPorRotacion, accionesVigentes } from './metricas.js';
+import { contar, contarPorRotacion } from './metricas.js';
 import type { Accion } from './accion.js';
 
 function acc(over: Partial<Accion>): Accion {
@@ -58,15 +58,5 @@ describe('contarPorRotacion', () => {
     expect(r1.puntosTotales).toBe(1);
     const r2 = filas.find((f) => f.rotacion === 2)!;
     expect(r2.ataques).toBe(1);
-  });
-});
-
-describe('accionesVigentes', () => {
-  it('descarta la acción corregida y conserva la corrección', () => {
-    const vigentes = accionesVigentes([
-      acc({ id: 'a1', resultado: 'punto_directo' }),
-      acc({ id: 'a2', resultado: 'error', corrigeAccionId: 'a1' }),
-    ]);
-    expect(vigentes.map((a) => a.id)).toEqual(['a2']);
   });
 });

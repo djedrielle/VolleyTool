@@ -29,6 +29,11 @@ Contiene lo siguiente:
 
 `proyeccion`: toma un set (o un partido) recién cerrado, lee todas sus acciones, le pide a `dominio` que las cuente —descartando las corregidas— y escribe el resultado en las tablas de agregados: métricas por jugador, por equipo, por rotación, y actualiza la clasificación.
 
+### Lo implementado hasta ahora
+Del dominio Metrics ya funciona el flujo de captura y proyección, probado contra la base real. La **captura** permite abrir un set de un partido y registrar cada acción del juego (saque, ataque, bloqueo, etc.), que se **anexa** a la tabla de acciones y nunca se edita; también se pueden consultar las acciones de un set. El **proyector** toma todas las acciones de un partido, las cuenta en `dominio` y guarda los agregados —métricas por jugador, por equipo y efectividad por rotación—; por ahora se dispara a mano con un endpoint de «recalcular», que es idempotente (se puede correr las veces que sea sin duplicar nada). Las **consultas** leen esos agregados ya calculados.
+
+Queda pendiente cerrar el set y el marcador en vivo, el «deshacer» con correcciones, la tabla de clasificación (que necesita datos de Core), la alineación y las métricas de Spike Performance.
+
 ## DataBase
 ![Esta es la estructura inicial de la base de datos del dominio Metrics.](./figs/metrics_db.jpg)
 

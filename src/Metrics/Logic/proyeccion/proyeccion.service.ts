@@ -1,7 +1,6 @@
-import type { Accion } from '../dominio/accion.js';
+import { accionesVigentes, type Accion } from '../dominio/accion.js';
 import type { SetPartido } from '../dominio/set-partido.js';
 import {
-  accionesVigentes,
   contar,
   contarPorRotacion,
   type MetricasJugadorPartido,

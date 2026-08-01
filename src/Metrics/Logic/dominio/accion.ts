@@ -56,6 +56,7 @@ export interface NuevaAccion {
   tipo: TipoAccion;
   resultado: Resultado;
   puntoParaEquipoId?: string | null;
+  corrigeAccionId?: string | null;
   registradoPor?: string | null;
 }
 
@@ -77,4 +78,15 @@ export function validarNuevaAccion(a: NuevaAccion): string[] {
     errores.push(`El resultado "${a.resultado}" no es válido para un ${a.tipo}.`);
 
   return errores;
+}
+
+// Descarta las acciones que ya no cuentan por una corrección: tanto la
+// acción anulada (a la que otra apunta con corrigeAccionId) como la
+// propia fila de anulación. "Deshacer" anexa una fila apuntando a la
+// acción a anular, y así ninguna de las dos entra en los agregados.
+export function accionesVigentes(acciones: Accion[]): Accion[] {
+  const anuladas = new Set(
+    acciones.filter((a) => a.corrigeAccionId).map((a) => a.corrigeAccionId as string),
+  );
+  return acciones.filter((a) => !a.corrigeAccionId && !anuladas.has(a.id));
 }

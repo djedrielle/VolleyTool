@@ -80,10 +80,13 @@ describe('ProyeccionService', () => {
     expect(e1r1.puntosTotales).toBe(1);
   });
 
-  it('ignora las acciones corregidas', async () => {
+  it('ignora la acción anulada por un deshacer', async () => {
     const { svc, obtenerEscrito } = montar([
-      acc({ id: 'a1', jugadorId: 'j1', equipoId: 'e1', tipo: 'ataque', resultado: 'punto_directo' }),
-      acc({ id: 'a2', jugadorId: 'j1', equipoId: 'e1', tipo: 'ataque', resultado: 'error', corrigeAccionId: 'a1' }),
+      acc({ id: 'a1', jugadorId: 'j1', equipoId: 'e1', rally: 1, tipo: 'ataque', resultado: 'punto_directo' }),
+      // anula a1 (deshacer): ni a1 ni a2 cuentan
+      acc({ id: 'a2', jugadorId: 'j1', equipoId: 'e1', rally: 1, tipo: 'ataque', resultado: 'punto_directo', corrigeAccionId: 'a1' }),
+      // acción vigente posterior
+      acc({ id: 'a3', jugadorId: 'j1', equipoId: 'e1', rally: 2, tipo: 'ataque', resultado: 'error' }),
     ]);
 
     await svc.proyectarPartido('p1');

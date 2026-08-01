@@ -122,16 +122,6 @@ export function contarPorRotacion(
   return filas;
 }
 
-// Filtra las acciones corregidas: si una acción fue reemplazada por otra
-// (otra apunta a ella con corrigeAccionId), se descarta. Por ahora no hay
-// correcciones, pero el proyector ya nace correcto para cuando lleguen.
-export function accionesVigentes(acciones: Accion[]): Accion[] {
-  const corregidas = new Set(
-    acciones.filter((a) => a.corrigeAccionId).map((a) => a.corrigeAccionId as string),
-  );
-  return acciones.filter((a) => !corregidas.has(a.id));
-}
-
 // Agregados por jugador y por equipo en un partido (los 18 contadores más
 // las llaves).
 export interface MetricasJugadorPartido extends Contadores {

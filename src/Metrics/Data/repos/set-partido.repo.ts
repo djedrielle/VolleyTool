@@ -36,4 +36,16 @@ export class DrizzleSetPartidoRepo implements SetPartidoRepo {
       .orderBy(asc(setPartido.numero));
     return filas.map(aDominio);
   }
+
+  async cerrar(
+    id: string,
+    marcador: { puntosCasa: number; puntosVisita: number },
+  ): Promise<SetPartido | null> {
+    const [fila] = await this.db
+      .update(setPartido)
+      .set({ cerrado: true, puntosCasa: marcador.puntosCasa, puntosVisita: marcador.puntosVisita })
+      .where(eq(setPartido.id, id))
+      .returning();
+    return fila ? aDominio(fila) : null;
+  }
 }
