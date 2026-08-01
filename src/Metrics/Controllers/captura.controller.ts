@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import type { CapturaService } from '../Logic/captura/captura.service.js';
-import type { NuevaAccion } from '../Logic/dominio/accion.js';
+import type { AccionEntrante } from '../Logic/dominio/accion.js';
+import type { JugadorAlineado } from '../Logic/dominio/alineacion.js';
 import { requireRole } from '../../shared/http/auth.js';
 
 // El controller de captura: lo operan el capturador o el administrador.
@@ -18,9 +19,10 @@ export function capturaRoutes(service: CapturaService) {
       async (req) => service.setsDePartido(req.params.partidoId),
     );
 
+    // `rotacion` es opcional en el body: si no viene, la captura la deduce.
     app.post<{
       Params: { setId: string };
-      Body: Omit<NuevaAccion, 'setId' | 'registradoPor'>;
+      Body: Omit<AccionEntrante, 'setId' | 'registradoPor'>;
     }>(
       '/sets/:setId/acciones',
       { preHandler: requireRole('capturador', 'administrador') },
@@ -36,6 +38,44 @@ export function capturaRoutes(service: CapturaService) {
 
     app.get<{ Params: { setId: string } }>('/sets/:setId/acciones', async (req) =>
       service.accionesDeSet(req.params.setId),
+    );
+
+    // La alineación se reemplaza entera (PUT): declararla de nuevo la
+    // corrige mientras el set siga abierto.
+    app.put<{
+      Params: { setId: string };
+      Body: { equipoId: string; jugadores: JugadorAlineado[] };
+    }>(
+      '/sets/:setId/alineacion',
+      { preHandler: requireRole('capturador', 'administrador') },
+      async (req) =>
+        service.declararAlineacion(
+          req.params.setId,
+          req.body.equipoId,
+          req.body.jugadores ?? [],
+        ),
+    );
+
+    app.get<{ Params: { setId: string } }>('/sets/:setId/alineacion', async (req) =>
+      service.alineacionDeSet(req.params.setId),
+    );
+
+    // Un cambio: quién sale, quién entra y en qué rally.
+    app.post<{
+      Params: { setId: string };
+      Body: { equipoId: string; saleJugadorId: string; entraJugadorId: string; rally: number };
+    }>(
+      '/sets/:setId/cambios',
+      { preHandler: requireRole('capturador', 'administrador') },
+      async (req, reply) =>
+        reply
+          .code(201)
+          .send(await service.sustituir(req.params.setId, req.body.equipoId, req.body)),
+    );
+
+    // La cancha ahora mismo: rotación de cada equipo y dónde está cada quien.
+    app.get<{ Params: { setId: string } }>('/sets/:setId/cancha', async (req) =>
+      service.cancha(req.params.setId),
     );
 
     // Deshacer la última acción del set (anexa una anulación).

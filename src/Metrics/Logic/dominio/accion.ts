@@ -60,6 +60,11 @@ export interface NuevaAccion {
   registradoPor?: string | null;
 }
 
+// Lo que llega del capturador: igual, pero la rotación es opcional. Si
+// no viene, la captura la deduce de la seguidilla de puntos del set y
+// arma la NuevaAccion completa antes de anexarla.
+export type AccionEntrante = Omit<NuevaAccion, 'rotacion'> & { rotacion?: number };
+
 export function validarNuevaAccion(a: NuevaAccion): string[] {
   const errores: string[] = [];
   if (!a.setId) errores.push('El set es obligatorio.');

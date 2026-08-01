@@ -34,7 +34,9 @@ Del dominio Metrics ya funciona el flujo completo de captura y proyección, prob
 
 El **proyector** toma todas las acciones de un partido, las cuenta en `dominio` y guarda los agregados —métricas por jugador, por equipo y efectividad por rotación—, y en cascada rehace la tabla de clasificación del torneo al que pertenece el partido: cuántos partidos jugó, ganó y perdió cada equipo, sus sets a favor y en contra y los puntos según el sistema de la FIVB (tres por ganar, dos y uno cuando se define en el quinto set). Para eso necesita saber quién juega de casa y quién de visita, dato que es de Core y no de Metrics; se lo pregunta a través de un **cliente de Core**, la única puerta entre los dos dominios, de manera que Metrics nunca lee las tablas ajenas. Todo el proyector es idempotente: se puede correr las veces que sea sin duplicar nada, porque reemplaza en lugar de sumar. Las **consultas** leen esos agregados ya calculados.
 
-Queda pendiente el marcador en vivo, la alineación y las métricas de Spike Performance.
+La **alineación** cierra el círculo de la rotación. Al abrir el set cada equipo declara sus seis titulares con la posición en la que arranca cada uno —esa formación es, por definición, su rotación 1— más el líbero, que no entra en el giro. De ahí en adelante el capturador ya no tiene que decir en qué rotación va el equipo: se deduce sola, porque un equipo rota exactamente cuando gana un punto sin estar sacando, así que basta con la seguidilla de puntos del set. La alineación sirve además para saber quién está parado en cada zona en cada momento, contando los cambios de jugadores, que es lo que necesita la app de captura para mostrar la cancha en vez de pedir identificadores a mano.
+
+Queda pendiente el marcador en vivo y las métricas de Spike Performance.
 
 ## DataBase
 ![Esta es la estructura inicial de la base de datos del dominio Metrics.](./figs/metrics_db.jpg)
