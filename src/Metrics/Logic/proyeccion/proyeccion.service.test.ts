@@ -4,9 +4,12 @@ import {
   type AccionLectura,
   type SetLectura,
   type AgregadosEscritura,
+  type ClasificacionEscritura,
 } from './proyeccion.service.js';
 import type { Accion } from '../dominio/accion.js';
 import type { SetPartido } from '../dominio/set-partido.js';
+import type { CoreClient, PartidoDeCore } from '../core-client.js';
+import type { FilaClasificacion } from '../dominio/clasificacion.js';
 import type {
   MetricasJugadorPartido,
   MetricasEquipoPartido,
@@ -38,11 +41,23 @@ interface Escrito {
   rotaciones: MetricasRotacion[];
 }
 
-function montar(acciones: Accion[]) {
-  const sets: SetPartido[] = [
-    { id: 's1', partidoId: 'p1', numero: 1, puntosCasa: 0, puntosVisita: 0, cerrado: false },
-  ];
-  const setRepo: SetLectura = { listarPorPartido: async () => sets };
+const PARTIDOS: PartidoDeCore[] = [
+  { id: 'p1', torneoId: 't1', equipoCasaId: 'e1', equipoVisitaId: 'e2' },
+];
+
+const SET_ABIERTO: SetPartido = {
+  id: 's1',
+  partidoId: 'p1',
+  numero: 1,
+  puntosCasa: 0,
+  puntosVisita: 0,
+  cerrado: false,
+};
+
+function montar(acciones: Accion[], sets: SetPartido[] = [SET_ABIERTO]) {
+  const setRepo: SetLectura = {
+    listarPorPartido: async (id) => sets.filter((s) => s.partidoId === id),
+  };
   const accionRepo: AccionLectura = {
     listarPorSet: async (id) => acciones.filter((a) => a.setId === id),
   };
@@ -52,8 +67,23 @@ function montar(acciones: Accion[]) {
       escrito = datos;
     },
   };
-  const svc = new ProyeccionService(accionRepo, setRepo, agregados);
-  return { svc, obtenerEscrito: () => escrito as Escrito | null };
+  let tabla: FilaClasificacion[] = [];
+  const clasificacion: ClasificacionEscritura = {
+    reemplazarDeTorneo: async (_torneoId, filas) => {
+      tabla = filas;
+    },
+  };
+  const core: CoreClient = {
+    obtenerPartido: async (id) => PARTIDOS.find((p) => p.id === id) ?? null,
+    partidosDeTorneo: async (torneoId) => PARTIDOS.filter((p) => p.torneoId === torneoId),
+  };
+
+  const svc = new ProyeccionService(accionRepo, setRepo, agregados, clasificacion, core);
+  return {
+    svc,
+    obtenerEscrito: () => escrito as Escrito | null,
+    obtenerTabla: () => tabla,
+  };
 }
 
 describe('ProyeccionService', () => {
@@ -65,7 +95,7 @@ describe('ProyeccionService', () => {
     ]);
 
     const resumen = await svc.proyectarPartido('p1');
-    expect(resumen).toEqual({ jugadores: 2, equipos: 2, rotaciones: 12 });
+    expect(resumen).toEqual({ jugadores: 2, equipos: 2, rotaciones: 12, clasificacion: 2 });
 
     const escrito = obtenerEscrito()!;
     const j1 = escrito.jugadores.find((x) => x.jugadorId === 'j1')!;
@@ -94,5 +124,36 @@ describe('ProyeccionService', () => {
     expect(j1.ataquesTotales).toBe(1);
     expect(j1.ataquesErrados).toBe(1);
     expect(j1.ataquesPuntoDirecto).toBe(0);
+  });
+
+  it('recalcula la tabla del torneo en cascada al proyectar el partido', async () => {
+    const cerrado = (numero: number, casa: number, visita: number): SetPartido => ({
+      id: `s${numero}`,
+      partidoId: 'p1',
+      numero,
+      puntosCasa: casa,
+      puntosVisita: visita,
+      cerrado: true,
+    });
+    const { svc, obtenerTabla } = montar(
+      [acc({ id: 'a1', setId: 's1' })],
+      [cerrado(1, 25, 20), cerrado(2, 25, 22), cerrado(3, 18, 25), cerrado(4, 25, 19)],
+    );
+
+    await svc.proyectarPartido('p1');
+
+    const tabla = obtenerTabla();
+    expect(tabla.map((f) => f.equipoId)).toEqual(['e1', 'e2']);
+    expect(tabla[0]).toMatchObject({
+      torneoId: 't1',
+      equipoId: 'e1',
+      pj: 1,
+      pg: 1,
+      pp: 0,
+      setsFavor: 3,
+      setsContra: 1,
+      puntos: 3,
+    });
+    expect(tabla[1]).toMatchObject({ equipoId: 'e2', pg: 0, pp: 1, puntos: 0 });
   });
 });

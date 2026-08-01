@@ -10,6 +10,9 @@ class RepoFalso implements PartidoRepo {
   async listar() {
     return [...this.datos];
   }
+  async listarPorTorneo(torneoId: string) {
+    return this.datos.filter((p) => p.torneoId === torneoId);
+  }
   async obtener(id: string) {
     return this.datos.find((p) => p.id === id) ?? null;
   }

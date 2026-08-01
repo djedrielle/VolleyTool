@@ -5,6 +5,7 @@ import { ErrorValidacion, NoEncontrado } from '../../../shared/errors.js';
 
 export interface PartidoRepo {
   listar(): Promise<Partido[]>;
+  listarPorTorneo(torneoId: string): Promise<Partido[]>;
   obtener(id: string): Promise<Partido | null>;
   // Inserta el partido y sus dos equipos juntos (transacción en el repo).
   crear(datos: NuevoPartido): Promise<Partido>;
@@ -16,6 +17,10 @@ export class PartidoService {
 
   listar(): Promise<Partido[]> {
     return this.repo.listar();
+  }
+
+  listarPorTorneo(torneoId: string): Promise<Partido[]> {
+    return this.repo.listarPorTorneo(torneoId);
   }
 
   async obtener(id: string): Promise<Partido> {

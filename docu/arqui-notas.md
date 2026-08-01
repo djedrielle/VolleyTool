@@ -30,9 +30,11 @@ Contiene lo siguiente:
 `proyeccion`: toma un set (o un partido) recién cerrado, lee todas sus acciones, le pide a `dominio` que las cuente —descartando las corregidas— y escribe el resultado en las tablas de agregados: métricas por jugador, por equipo, por rotación, y actualiza la clasificación.
 
 ### Lo implementado hasta ahora
-Del dominio Metrics ya funciona el flujo de captura y proyección, probado contra la base real. La **captura** permite abrir un set de un partido y registrar cada acción del juego (saque, ataque, bloqueo, etc.), que se **anexa** a la tabla de acciones y nunca se edita; también se pueden consultar las acciones de un set. El **proyector** toma todas las acciones de un partido, las cuenta en `dominio` y guarda los agregados —métricas por jugador, por equipo y efectividad por rotación—; por ahora se dispara a mano con un endpoint de «recalcular», que es idempotente (se puede correr las veces que sea sin duplicar nada). Las **consultas** leen esos agregados ya calculados.
+Del dominio Metrics ya funciona el flujo completo de captura y proyección, probado contra la base real. La **captura** permite abrir un set de un partido y registrar cada acción del juego (saque, ataque, bloqueo, etc.), que se **anexa** a la tabla de acciones y nunca se edita. Deshacer no es una excepción a esa regla: en vez de borrar la última acción se anexa otra que la anula, y a la hora de contar se descartan las dos. Al cerrar el set se fija el marcador y se dispara solo el proyector.
 
-Queda pendiente cerrar el set y el marcador en vivo, el «deshacer» con correcciones, la tabla de clasificación (que necesita datos de Core), la alineación y las métricas de Spike Performance.
+El **proyector** toma todas las acciones de un partido, las cuenta en `dominio` y guarda los agregados —métricas por jugador, por equipo y efectividad por rotación—, y en cascada rehace la tabla de clasificación del torneo al que pertenece el partido: cuántos partidos jugó, ganó y perdió cada equipo, sus sets a favor y en contra y los puntos según el sistema de la FIVB (tres por ganar, dos y uno cuando se define en el quinto set). Para eso necesita saber quién juega de casa y quién de visita, dato que es de Core y no de Metrics; se lo pregunta a través de un **cliente de Core**, la única puerta entre los dos dominios, de manera que Metrics nunca lee las tablas ajenas. Todo el proyector es idempotente: se puede correr las veces que sea sin duplicar nada, porque reemplaza en lugar de sumar. Las **consultas** leen esos agregados ya calculados.
+
+Queda pendiente el marcador en vivo, la alineación y las métricas de Spike Performance.
 
 ## DataBase
 ![Esta es la estructura inicial de la base de datos del dominio Metrics.](./figs/metrics_db.jpg)

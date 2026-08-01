@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { db as dbCompartida } from '../../../shared/db/client.js';
 import { partido } from '../schema/partido.js';
 import { partidoEquipo } from '../schema/partido-equipo.js';
@@ -32,6 +32,25 @@ export class DrizzlePartidoRepo implements PartidoRepo {
   async listar(): Promise<Partido[]> {
     const partidos = await this.db.select().from(partido).orderBy(partido.fechaHora);
     const equipos = await this.db.select().from(partidoEquipo);
+    return partidos.map((p) => armar(p, equipos.filter((e) => e.partidoId === p.id)));
+  }
+
+  async listarPorTorneo(torneoId: string): Promise<Partido[]> {
+    const partidos = await this.db
+      .select()
+      .from(partido)
+      .where(eq(partido.torneoId, torneoId))
+      .orderBy(partido.fechaHora);
+    if (partidos.length === 0) return [];
+    const equipos = await this.db
+      .select()
+      .from(partidoEquipo)
+      .where(
+        inArray(
+          partidoEquipo.partidoId,
+          partidos.map((p) => p.id),
+        ),
+      );
     return partidos.map((p) => armar(p, equipos.filter((e) => e.partidoId === p.id)));
   }
 
