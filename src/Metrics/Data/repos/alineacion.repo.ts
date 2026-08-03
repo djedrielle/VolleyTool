@@ -14,7 +14,8 @@ function aDominio(fila: typeof alineacion.$inferSelect): Alineacion {
     setId: fila.setId,
     equipoId: fila.equipoId,
     jugadorId: fila.jugadorId,
-    rotacionInicial: fila.rotacionInicial,
+    posicionInicial: fila.posicionInicial,
+    esArmador: fila.esArmador,
     esLibero: fila.esLibero,
     entraEnRally: fila.entraEnRally,
     saleEnRally: fila.saleEnRally,
@@ -44,7 +45,8 @@ export class DrizzleAlineacionRepo implements AlineacionRepo {
             setId,
             equipoId,
             jugadorId: j.jugadorId,
-            rotacionInicial: j.rotacionInicial ?? null,
+            posicionInicial: j.posicionInicial ?? null,
+            esArmador: j.esArmador ?? false,
             esLibero: j.esLibero ?? false,
           })),
         )
@@ -58,16 +60,18 @@ export class DrizzleAlineacionRepo implements AlineacionRepo {
       .select()
       .from(alineacion)
       .where(eq(alineacion.setId, setId))
-      .orderBy(asc(alineacion.equipoId), asc(alineacion.rotacionInicial));
+      .orderBy(asc(alineacion.equipoId), asc(alineacion.posicionInicial));
     return filas.map(aDominio);
   }
 
-  // Marcar la salida e insertar la entrada van juntas o no van.
+  // Marcar la salida e insertar la entrada van juntas o no van. Al que
+  // sale se le quita el rol de armador: si lo era, el que entra ya lo
+  // hereda, y así nunca hay dos armadores activos.
   async sustituir(saleId: string, rally: number, entra: NuevaAlineacion): Promise<Alineacion> {
     return this.db.transaction(async (tx) => {
       await tx
         .update(alineacion)
-        .set({ saleEnRally: rally })
+        .set({ saleEnRally: rally, esArmador: false })
         .where(eq(alineacion.id, saleId));
       const [fila] = await tx.insert(alineacion).values(entra).returning();
       return aDominio(fila!);

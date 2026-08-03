@@ -75,7 +75,8 @@ class AlineacionesFalso implements AlineacionRepo {
       setId,
       equipoId,
       jugadorId: j.jugadorId,
-      rotacionInicial: j.rotacionInicial ?? null,
+      posicionInicial: j.posicionInicial ?? null,
+      esArmador: j.esArmador ?? false,
       esLibero: j.esLibero ?? false,
       entraEnRally: null,
       saleEnRally: null,
@@ -89,6 +90,7 @@ class AlineacionesFalso implements AlineacionRepo {
   async sustituir(saleId: string, rally: number, entra: NuevaAlineacion) {
     const sale = this.datos.find((a) => a.id === saleId)!;
     sale.saleEnRally = rally;
+    sale.esArmador = false;
     const fila = { id: `sub-${this.datos.length}`, ...entra };
     this.datos.push(fila);
     return fila;
@@ -122,7 +124,7 @@ async function montar() {
   return { app, acciones, alineaciones, proyector };
 }
 
-const TITULARES = [1, 2, 3, 4, 5, 6].map((p) => ({ jugadorId: `j${p}`, rotacionInicial: p }));
+const TITULARES = [1, 2, 3, 4, 5, 6].map((p) => ({ jugadorId: `j${p}`, posicionInicial: p }));
 
 async function abrirSet(app: FastifyInstance): Promise<string> {
   const res = await app.inject({
@@ -269,6 +271,34 @@ describe('captura controller', () => {
     await app.close();
   });
 
+  it('arranca en la rotación del armador (no siempre en la 1)', async () => {
+    const { app } = await montar();
+    const setId = await abrirSet(app);
+    // el armador abre en la zona 3: el equipo arranca en rotación 3
+    const jugadores = TITULARES.map((t) =>
+      t.jugadorId === 'j3' ? { ...t, esArmador: true } : t,
+    );
+    await app.inject({
+      method: 'PUT',
+      url: `/captura/sets/${setId}/alineacion`,
+      headers: { authorization: bearer('capturador') },
+      payload: { equipoId: 'e1', jugadores },
+    });
+
+    // sin mandar rotación: se deduce y queda anclada al armador
+    const res = await app.inject({
+      method: 'POST',
+      url: `/captura/sets/${setId}/acciones`,
+      headers: { authorization: bearer('capturador') },
+      payload: { ...accionSinRotacion, equipoId: 'e1', rally: 1, ordenEnRally: 1 },
+    });
+    expect(res.json<{ rotacion: number }>().rotacion).toBe(3);
+
+    const cancha = await app.inject({ method: 'GET', url: `/captura/sets/${setId}/cancha` });
+    expect(cancha.json<{ rotacion: number }[]>()[0]!.rotacion).toBe(3);
+    await app.close();
+  });
+
   it('declara la alineación y muestra la cancha', async () => {
     const { app } = await montar();
     const setId = await abrirSet(app);
@@ -322,8 +352,8 @@ describe('captura controller', () => {
     });
 
     expect(res.statusCode).toBe(201);
-    expect(res.json<{ rotacionInicial: number; entraEnRally: number }>()).toMatchObject({
-      rotacionInicial: 4,
+    expect(res.json<{ posicionInicial: number; entraEnRally: number }>()).toMatchObject({
+      posicionInicial: 4,
       entraEnRally: 7,
     });
     expect(alineaciones.datos.find((a) => a.jugadorId === 'j4')!.saleEnRally).toBe(7);

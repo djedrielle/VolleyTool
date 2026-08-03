@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import {
   validarAlineacion,
+  rotacionRelativa,
   rotacionActual,
+  zonaInicialArmador,
   zonaEnRotacion,
   enCancha,
   posicionesEnCancha,
@@ -11,7 +13,7 @@ import type { Accion } from './accion.js';
 
 const TITULARES = [1, 2, 3, 4, 5, 6].map((p) => ({
   jugadorId: `j${p}`,
-  rotacionInicial: p,
+  posicionInicial: p,
 }));
 
 function acc(over: Partial<Accion>): Accion {
@@ -55,7 +57,8 @@ function alin(over: Partial<Alineacion>): Alineacion {
     setId: 's1',
     equipoId: 'e1',
     jugadorId: 'j1',
-    rotacionInicial: 1,
+    posicionInicial: 1,
+    esArmador: false,
     esLibero: false,
     entraEnRally: null,
     saleEnRally: null,
@@ -70,39 +73,53 @@ describe('validarAlineacion', () => {
     ).toEqual([]);
   });
 
+  it('acepta un armador entre los titulares', () => {
+    const conArmador = TITULARES.map((t) =>
+      t.jugadorId === 'j2' ? { ...t, esArmador: true } : t,
+    );
+    expect(validarAlineacion(conArmador)).toEqual([]);
+  });
+
   it('rechaza si faltan titulares', () => {
     expect(validarAlineacion(TITULARES.slice(0, 5)).length).toBeGreaterThan(0);
   });
 
   it('rechaza dos titulares en la misma posición', () => {
-    const repetida = [...TITULARES.slice(0, 5), { jugadorId: 'j9', rotacionInicial: 1 }];
+    const repetida = [...TITULARES.slice(0, 5), { jugadorId: 'j9', posicionInicial: 1 }];
     expect(validarAlineacion(repetida).length).toBeGreaterThan(0);
   });
 
   it('rechaza al líbero con posición de giro', () => {
     const errores = validarAlineacion([
       ...TITULARES,
-      { jugadorId: 'j7', esLibero: true, rotacionInicial: 2 },
+      { jugadorId: 'j7', esLibero: true, posicionInicial: 2 },
     ]);
     expect(errores.length).toBeGreaterThan(0);
   });
+
+  it('rechaza dos armadores', () => {
+    const dos = TITULARES.map((t) =>
+      t.jugadorId === 'j2' || t.jugadorId === 'j4' ? { ...t, esArmador: true } : t,
+    );
+    expect(validarAlineacion(dos).length).toBeGreaterThan(0);
+  });
 });
 
-describe('rotacionActual', () => {
+describe('rotacionRelativa', () => {
   it('arranca en 1 cuando el set no tiene acciones', () => {
-    expect(rotacionActual('e1', [])).toBe(1);
+    expect(rotacionRelativa('e1', [])).toBe(1);
   });
 
   it('no rota al equipo que gana con su propio saque', () => {
     const acciones = [...rally(1, 'e1', 'e1'), ...rally(2, 'e1', 'e1')];
-    expect(rotacionActual('e1', acciones)).toBe(1);
-    expect(rotacionActual('e2', acciones)).toBe(1);
+    expect(rotacionRelativa('e1', acciones)).toBe(1);
+    expect(rotacionRelativa('e2', acciones)).toBe(1);
   });
 
   it('rota al equipo que gana el punto recibiendo (side-out)', () => {
     const acciones = rally(1, 'e1', 'e2');
-    expect(rotacionActual('e2', acciones)).toBe(2);
-    expect(rotacionActual('e1', acciones)).toBe(1);
+    expect(rotacionRelativa('e2', acciones)).toBe(2);
+    expect(rotacionRelativa('e1', acciones)).toBe(1);
   });
 
   it('suma un giro por cada side-out', () => {
@@ -115,13 +132,45 @@ describe('rotacionActual', () => {
       ...rally(5, 'e1', 'e2'),
       ...rally(6, 'e2', 'e1'),
     ];
-    expect(rotacionActual('e1', acciones)).toBe(4);
-    expect(rotacionActual('e2', acciones)).toBe(4);
+    expect(rotacionRelativa('e1', acciones)).toBe(4);
+    expect(rotacionRelativa('e2', acciones)).toBe(4);
+  });
+});
+
+describe('rotacionActual anclada al armador', () => {
+  it('sin armador cae en la relativa (arranca en 1)', () => {
+    expect(rotacionActual('e1', [])).toBe(1);
+    expect(rotacionActual('e1', [], null)).toBe(1);
+  });
+
+  it('arranca en la zona del armador: si abre en zona 3, es rotación 3', () => {
+    expect(rotacionActual('e1', [], 3)).toBe(3);
+  });
+
+  it('sigue al armador zona a zona en sentido horario', () => {
+    // armador abre en zona 3; e1 rota una vez (side-out): pasa a zona 2
+    const acciones = rally(1, 'e2', 'e1');
+    expect(rotacionRelativa('e1', acciones)).toBe(2);
+    expect(rotacionActual('e1', acciones, 3)).toBe(2);
+  });
+});
+
+describe('zonaInicialArmador', () => {
+  it('devuelve la posición del armador activo', () => {
+    const alineacion = [
+      alin({ id: 'a', jugadorId: 'arm', posicionInicial: 4, esArmador: true }),
+      alin({ id: 'b', jugadorId: 'otro', posicionInicial: 2 }),
+    ];
+    expect(zonaInicialArmador(alineacion, 'e1')).toBe(4);
+  });
+
+  it('null cuando no se marcó armador', () => {
+    expect(zonaInicialArmador([alin({})], 'e1')).toBeNull();
   });
 });
 
 describe('zonaEnRotacion', () => {
-  it('deja a cada quien donde arrancó en la rotación 1', () => {
+  it('deja a cada quien donde arrancó en la rotación relativa 1', () => {
     expect(zonaEnRotacion(4, 1)).toBe(4);
   });
 
@@ -148,9 +197,9 @@ describe('enCancha y posicionesEnCancha', () => {
 
   it('marca delanteros y deja al líbero sin zona', () => {
     const alineacion = [
-      alin({ id: 'a', jugadorId: 'j3', rotacionInicial: 3 }),
-      alin({ id: 'b', jugadorId: 'j5', rotacionInicial: 5 }),
-      alin({ id: 'c', jugadorId: 'libero', rotacionInicial: null, esLibero: true }),
+      alin({ id: 'a', jugadorId: 'j3', posicionInicial: 3 }),
+      alin({ id: 'b', jugadorId: 'j5', posicionInicial: 5 }),
+      alin({ id: 'c', jugadorId: 'libero', posicionInicial: null, esLibero: true }),
     ];
     const cancha = posicionesEnCancha(alineacion, 1, 1);
     expect(cancha).toContainEqual({ jugadorId: 'j3', zona: 3, delantero: true });

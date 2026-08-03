@@ -185,20 +185,28 @@ CREATE TABLE metrics.set_partido (
   UNIQUE (partido_id, numero)
 );
 
-/* Quien estaba en cancha y en que rotacion arranco.
-   Sin esto, el campo rotacion de las acciones no es verificable. */
+/* Quien estaba en cancha, en que zona arranco y quien es el armador.
+   Sin esto, el campo rotacion de las acciones no es verificable.
+   posicion_inicial es la zona 1..6 de arranque (null en el libero); el
+   numero de rotacion del equipo se ancla al armador (rotacion N = armador
+   en zona N), asi que un equipo puede abrir el set en cualquier rotacion. */
 CREATE TABLE metrics.alineacion (
   id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   set_id            uuid NOT NULL REFERENCES metrics.set_partido(id) ON DELETE CASCADE,
   equipo_id         uuid NOT NULL REFERENCES metrics.equipo(id)      ON DELETE RESTRICT,
   jugador_id        uuid NOT NULL REFERENCES metrics.jugador(id)     ON DELETE RESTRICT,
-  rotacion_inicial  smallint CHECK (rotacion_inicial BETWEEN 1 AND 6),
+  posicion_inicial  smallint CHECK (posicion_inicial BETWEEN 1 AND 6),
+  es_armador        boolean NOT NULL DEFAULT false,
   es_libero         boolean NOT NULL DEFAULT false,
   entra_en_rally    smallint,
   sale_en_rally     smallint,
   UNIQUE (set_id, jugador_id),
-  CONSTRAINT libero_sin_rotacion CHECK (
-    (es_libero AND rotacion_inicial IS NULL) OR (NOT es_libero)
+  CONSTRAINT libero_sin_posicion CHECK (
+    (es_libero AND posicion_inicial IS NULL) OR (NOT es_libero)
+  ),
+  /* El armador es un titular en cancha: ni libero ni sin posicion. */
+  CONSTRAINT armador_valido CHECK (
+    NOT es_armador OR (NOT es_libero AND posicion_inicial IS NOT NULL)
   )
 );
 
@@ -522,6 +530,8 @@ CREATE INDEX set_partido_idx           ON metrics.set_partido (partido_id);
 CREATE INDEX plantilla_jugador_idx  ON metrics.plantilla (jugador_id);
 CREATE INDEX plantilla_equipo_idx   ON metrics.plantilla (equipo_id, torneo_id);
 CREATE INDEX alineacion_set_idx     ON metrics.alineacion (set_id);
+/* A lo sumo un armador por equipo en cada set. */
+CREATE UNIQUE INDEX alineacion_un_armador ON metrics.alineacion (set_id, equipo_id) WHERE es_armador;
 CREATE INDEX medicion_jugador_idx   ON metrics.medicion_spike (jugador_id, fecha_medicion DESC);
 
 CREATE INDEX mjp_partido_idx ON metrics.metricas_jugador_partido (partido_id);

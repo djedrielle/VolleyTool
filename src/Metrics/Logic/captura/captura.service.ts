@@ -11,6 +11,8 @@ import type {
 import {
   validarAlineacion,
   rotacionActual,
+  rotacionRelativa,
+  zonaInicialArmador,
   posicionesEnCancha,
 } from '../dominio/alineacion.js';
 import { ErrorValidacion, NoEncontrado } from '../../../shared/errors.js';
@@ -87,9 +89,14 @@ export class CapturaService {
     return this.acciones.anexar(completa);
   }
 
+  // La rotación del equipo, anclada a la zona del armador si la alineación
+  // lo declara. Sin alineación cae en la relativa (arranca en 1).
   private async rotacionDe(setId: string, equipoId: string): Promise<number> {
-    const vigentes = accionesVigentes(await this.acciones.listarPorSet(setId));
-    return rotacionActual(equipoId, vigentes);
+    const [vigentes, alineacion] = await Promise.all([
+      this.acciones.listarPorSet(setId).then(accionesVigentes),
+      this.alineaciones.listarPorSet(setId),
+    ]);
+    return rotacionActual(equipoId, vigentes, zonaInicialArmador(alineacion, equipoId));
   }
 
   accionesDeSet(setId: string): Promise<Accion[]> {
@@ -145,7 +152,8 @@ export class CapturaService {
       setId,
       equipoId,
       jugadorId: datos.entraJugadorId,
-      rotacionInicial: sale.rotacionInicial,
+      posicionInicial: sale.posicionInicial,
+      esArmador: sale.esArmador,
       esLibero: sale.esLibero,
       entraEnRally: datos.rally,
       saleEnRally: null,
@@ -165,9 +173,10 @@ export class CapturaService {
     const alineacion = await this.alineaciones.listarPorSet(setId);
 
     return [...new Set(alineacion.map((a) => a.equipoId))].map((equipoId) => {
-      const rotacion = rotacionActual(equipoId, vigentes);
       const suya = alineacion.filter((a) => a.equipoId === equipoId);
-      return { equipoId, rally, rotacion, jugadores: posicionesEnCancha(suya, rotacion, rally) };
+      const relativa = rotacionRelativa(equipoId, vigentes);
+      const rotacion = rotacionActual(equipoId, vigentes, zonaInicialArmador(suya, equipoId));
+      return { equipoId, rally, rotacion, jugadores: posicionesEnCancha(suya, relativa, rally) };
     });
   }
 
