@@ -1,4 +1,5 @@
 import Fastify, { type FastifyInstance } from 'fastify';
+import cors from '@fastify/cors';
 import { autenticar } from './shared/http/auth.js';
 import { ErrorValidacion, NoEncontrado } from './shared/errors.js';
 import { registrarCore } from './Core/index.js';
@@ -50,6 +51,10 @@ export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({ logger: true });
 
   configurarApp(app);
+  // Sin esto el navegador bloquea las llamadas del front (otro origen:
+  // :5173 → :3000). `origin: true` refleja el origen que pide; en
+  // producción se restringe al dominio real.
+  await app.register(cors, { origin: true });
   app.get('/health', async () => ({ status: 'ok' }));
   await registrarCore(app);
   await registrarMetrics(app);
