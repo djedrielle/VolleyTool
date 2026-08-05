@@ -9,14 +9,14 @@ export function PaginaEquipos() {
 
     return (
         <main>
-            <h1>Equipos</h1>
-            <section className='lista-equipos'>
+            <h2>Equipos</h2>
+            <div className='grid-tarjetas'>
                 {equipos.map((equipo) => (
-                    <Link key={equipo.id} to={`/equipos/${equipo.id}`}>
-                        <TarjetaEquipo nombre={equipo.nombre} corto={equipo.corto} categoria={equipo.categoria} />
+                    <Link key={equipo.id} to={`/equipos/${equipo.id}`} className='tarjeta tarjeta-equipo'>
+                        <TarjetaEquipo nombre={equipo.nombre} provincia={equipo.provincia} categoria={equipo.categoria} />
                     </Link>
                 ))}
-            </section>
+            </div>
         </main>
     );
 }

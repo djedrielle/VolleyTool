@@ -1,17 +1,14 @@
 type TarjetaEquipoProps = {
     nombre: string;
-    corto: string;
+    provincia: string | null;
     categoria: 'femenino' | 'masculino';
 };
 
-export function TarjetaEquipo({ nombre, corto, categoria }: TarjetaEquipoProps) {
+export function TarjetaEquipo({ nombre, provincia, categoria }: TarjetaEquipoProps) {
     return (
-        <article className="tarjeta-equipo">
-            <span className="corto">{corto}</span>
-            <div>
-                <h3>{nombre}</h3>
-                <p>{categoria}</p>
-            </div>
-        </article>
+        <>
+            <h3>{nombre}</h3>
+            <div className='te-meta'>{provincia ? `${provincia} · ${categoria}` : categoria}</div>
+        </>
     );
 }
