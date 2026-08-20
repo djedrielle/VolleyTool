@@ -15,6 +15,7 @@ export interface AgregadosLectura {
 
 export interface ClasificacionLectura {
   tablaDeTorneo(torneoId: string): Promise<FilaClasificacion[]>;
+  deEquipo(equipoId: string): Promise<FilaClasificacion[]>;
 }
 
 export class ConsultasService {
@@ -37,5 +38,11 @@ export class ConsultasService {
 
   clasificacion(torneoId: string): Promise<FilaClasificacion[]> {
     return this.tablas.tablaDeTorneo(torneoId);
+  }
+
+  // Las filas del equipo en todos los torneos donde tiene resultados. El
+  // frontend decide cuál es "el actual" (por temporada) y arma el histórico.
+  clasificacionDeEquipo(equipoId: string): Promise<FilaClasificacion[]> {
+    return this.tablas.deEquipo(equipoId);
   }
 }

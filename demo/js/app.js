@@ -142,14 +142,14 @@ function tablaHTML(categoria) {
   <table class="tabla">
     <thead><tr><th>#</th><th class="izq">Equipo</th><th>PJ</th><th>PG</th><th>PP</th><th>Sets</th><th>Pts</th></tr></thead>
     <tbody>${filas.map((f, i) => {
-      const e = D.equipo(f.equipoId);
-      return `<tr class="${i === 0 ? 'lider' : ''}">
+    const e = D.equipo(f.equipoId);
+    return `<tr class="${i === 0 ? 'lider' : ''}">
         <td>${i + 1}</td>
         <td class="izq"><a class="link-equipo" href="#/equipo/${e.id}">${escudo(e, 'xs')} ${esc(e.nombre)}</a></td>
         <td>${f.pj}</td><td>${f.pg}</td><td>${f.pp}</td>
         <td>${f.setsF}–${f.setsC}</td><td><b>${f.pts}</b></td>
       </tr>`;
-    }).join('')}</tbody>
+  }).join('')}</tbody>
   </table>`;
 }
 
@@ -282,7 +282,7 @@ function vistaEquipos(filtro = 'Todos') {
     <h1>Equipos</h1>
     <p>Cada club administra su plantilla, sus estadísticas y sus grabaciones desde un mismo perfil.</p>
     <div class="chips">${['Todos', 'Femenino', 'Masculino'].map(f =>
-      `<a class="chip ${f === filtro ? 'activo' : ''}" href="#/equipos${f === 'Todos' ? '' : '/' + f}">${f}</a>`).join('')}</div>
+    `<a class="chip ${f === filtro ? 'activo' : ''}" href="#/equipos${f === 'Todos' ? '' : '/' + f}">${f}</a>`).join('')}</div>
   </section>
   <div class="grid-tarjetas">
     ${equipos.map(e => {
@@ -511,7 +511,7 @@ function vistaPartidos(filtro = 'Todos') {
     <h1>Partidos</h1>
     <p>Resultados con estadísticas completas por set y por rotación, calendario y transmisiones.</p>
     <div class="chips">${['Todos', 'Femenino', 'Masculino'].map(f =>
-      `<a class="chip ${f === filtro ? 'activo' : ''}" href="#/partidos${f === 'Todos' ? '' : '/' + f}">${f}</a>`).join('')}</div>
+    `<a class="chip ${f === filtro ? 'activo' : ''}" href="#/partidos${f === 'Todos' ? '' : '/' + f}">${f}</a>`).join('')}</div>
   </section>
   ${enVivo.length ? `<section class="panel"><h2>🔴 En vivo ahora</h2><div class="lista-partidos">${enVivo.map(tarjetaPartido).join('')}</div></section>` : ''}
   ${proximos.length ? `<section class="panel"><h2>Próximos</h2><div class="lista-partidos">${proximos.map(tarjetaPartido).join('')}</div></section>` : ''}
@@ -816,31 +816,41 @@ function vistaComunidad() {
 /* ============================ VISTA: CAPTURA EN VIVO ============================ */
 
 const ACCIONES = [
-  { grupo: 'Saque', items: [
-    { id: 'saque_ace',       eti: 'Ace',           delta: [1, 0], cl: 'ok' },
-    { id: 'saque_dentro',    eti: 'En juego',      delta: [0, 0], cl: 'neutro' },
-    { id: 'saque_error',     eti: 'Error',         delta: [0, 1], cl: 'mal' },
-  ]},
-  { grupo: 'Ataque', items: [
-    { id: 'ataque_punto',    eti: 'Punto',         delta: [1, 0], cl: 'ok' },
-    { id: 'ataque_defendido',eti: 'Defendido',     delta: [0, 0], cl: 'neutro' },
-    { id: 'ataque_bloqueado',eti: 'Bloqueado',     delta: [0, 1], cl: 'mal' },
-    { id: 'ataque_error',    eti: 'Error',         delta: [0, 1], cl: 'mal' },
-  ]},
-  { grupo: 'Bloqueo', items: [
-    { id: 'bloqueo_punto',   eti: 'Punto',         delta: [1, 0], cl: 'ok' },
-    { id: 'bloqueo_toque',   eti: 'Toque',         delta: [0, 0], cl: 'neutro' },
-    { id: 'bloqueo_error',   eti: 'Error de red',  delta: [0, 1], cl: 'mal' },
-  ]},
-  { grupo: 'Recepción', items: [
-    { id: 'recep_perfecta',  eti: 'Perfecta (#)',  delta: [0, 0], cl: 'ok' },
-    { id: 'recep_buena',     eti: 'Buena',         delta: [0, 0], cl: 'neutro' },
-    { id: 'recep_error',     eti: 'Error (ace rival)', delta: [0, 1], cl: 'mal' },
-  ]},
-  { grupo: 'Otros puntos del rally', items: [
-    { id: 'rival_error',     eti: 'Error del rival', delta: [1, 0], cl: 'ok' },
-    { id: 'rival_punto',     eti: 'Punto del rival', delta: [0, 1], cl: 'mal' },
-  ]},
+  {
+    grupo: 'Saque', items: [
+      { id: 'saque_ace', eti: 'Ace', delta: [1, 0], cl: 'ok' },
+      { id: 'saque_dentro', eti: 'En juego', delta: [0, 0], cl: 'neutro' },
+      { id: 'saque_error', eti: 'Error', delta: [0, 1], cl: 'mal' },
+    ]
+  },
+  {
+    grupo: 'Ataque', items: [
+      { id: 'ataque_punto', eti: 'Punto', delta: [1, 0], cl: 'ok' },
+      { id: 'ataque_defendido', eti: 'Defendido', delta: [0, 0], cl: 'neutro' },
+      { id: 'ataque_bloqueado', eti: 'Bloqueado', delta: [0, 1], cl: 'mal' },
+      { id: 'ataque_error', eti: 'Error', delta: [0, 1], cl: 'mal' },
+    ]
+  },
+  {
+    grupo: 'Bloqueo', items: [
+      { id: 'bloqueo_punto', eti: 'Punto', delta: [1, 0], cl: 'ok' },
+      { id: 'bloqueo_toque', eti: 'Toque', delta: [0, 0], cl: 'neutro' },
+      { id: 'bloqueo_error', eti: 'Error de red', delta: [0, 1], cl: 'mal' },
+    ]
+  },
+  {
+    grupo: 'Recepción', items: [
+      { id: 'recep_perfecta', eti: 'Perfecta (#)', delta: [0, 0], cl: 'ok' },
+      { id: 'recep_buena', eti: 'Buena', delta: [0, 0], cl: 'neutro' },
+      { id: 'recep_error', eti: 'Error (ace rival)', delta: [0, 1], cl: 'mal' },
+    ]
+  },
+  {
+    grupo: 'Otros puntos del rally', items: [
+      { id: 'rival_error', eti: 'Error del rival', delta: [1, 0], cl: 'ok' },
+      { id: 'rival_punto', eti: 'Punto del rival', delta: [0, 1], cl: 'mal' },
+    ]
+  },
 ];
 
 const ACCION_POR_ID = Object.fromEntries(ACCIONES.flatMap(g => g.items.map(i => [i.id, { ...i, grupo: g.grupo }])));
@@ -942,14 +952,14 @@ function vistaCaptura() {
         <div class="grupo-acciones">
           <span class="ga-titulo">${g.grupo}</span>
           <div class="ga-botones">${g.items.map(a =>
-            `<button class="boton-accion ${a.cl}" onclick="vtAccion('${a.id}')">${a.eti}</button>`).join('')}</div>
+    `<button class="boton-accion ${a.cl}" onclick="vtAccion('${a.id}')">${a.eti}</button>`).join('')}</div>
         </div>`).join('')}
       <div class="log-acciones">
         ${ultimos.map(e => {
-          const a = ACCION_POR_ID[e.accion];
-          const j = e.jugadorId ? buscarJugador(e.jugadorId) : null;
-          return `<div class="log-item ${a.cl}">S${e.set + 1} · R${e.rot} · ${a.grupo}: ${a.eti}${j ? ` · #${j.numero}` : ''}</div>`;
-        }).join('') || '<div class="log-item neutro">Sin acciones todavía. Tocá un botón para registrar la primera.</div>'}
+      const a = ACCION_POR_ID[e.accion];
+      const j = e.jugadorId ? buscarJugador(e.jugadorId) : null;
+      return `<div class="log-item ${a.cl}">S${e.set + 1} · R${e.rot} · ${a.grupo}: ${a.eti}${j ? ` · #${j.numero}` : ''}</div>`;
+    }).join('') || '<div class="log-item neutro">Sin acciones todavía. Tocá un botón para registrar la primera.</div>'}
       </div>
     </section>
 
@@ -1238,17 +1248,17 @@ function enrutar() {
 
   switch (ruta) {
     case '':
-    case 'inicio':    vistaInicio(); break;
-    case 'equipos':   vistaEquipos(p1 || 'Todos'); break;
-    case 'equipo':    vistaEquipo(p1, p2 || 'plantilla'); break;
-    case 'jugador':   vistaJugador(p1); break;
-    case 'partidos':  vistaPartidos(p1 || 'Todos'); break;
-    case 'partido':   vistaPartido(p1); break;
-    case 'captura':   vistaCaptura(); break;
-    case 'videos':    vistaVideos(); break;
-    case 'scouting':  vistaScouting(p1, p2); break;
+    case 'inicio': vistaInicio(); break;
+    case 'equipos': vistaEquipos(p1 || 'Todos'); break;
+    case 'equipo': vistaEquipo(p1, p2 || 'plantilla'); break;
+    case 'jugador': vistaJugador(p1); break;
+    case 'partidos': vistaPartidos(p1 || 'Todos'); break;
+    case 'partido': vistaPartido(p1); break;
+    case 'captura': vistaCaptura(); break;
+    case 'videos': vistaVideos(); break;
+    case 'scouting': vistaScouting(p1, p2); break;
     case 'comunidad': vistaComunidad(); break;
-    default:          vista404();
+    default: vista404();
   }
   window.scrollTo({ top: 0 });
 }

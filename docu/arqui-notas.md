@@ -46,3 +46,8 @@ Queda pendiente el marcador en vivo y las métricas de Spike Performance.
 ![Diseño Core.](./figs/core_arquitectura.jpg)
 
 Core es el dominio que guarda las entidades compartidas por toda la plataforma: los equipos, los jugadores, el cuerpo técnico, los torneos, los partidos y las inscripciones (plantillas), junto con la identidad de los usuarios y sus roles. No es "lo más importante" de la aplicación, sino el catálogo neutral que los demás dominios necesitan referenciar: una métrica es de un jugador, una transmisión es de un partido, y ese jugador y ese partido viven en Core. Sigue la misma estructura de tres capas que Metrics (Controllers, Logic y Data): la administración del catálogo y la identidad viven en `Logic`, y cada entidad atraviesa las capas de dominio, servicio y repositorio hasta su controlador.
+
+
+### Notas de lógica
+- En el detalle de cada equipo se muestra información de la tabla de posición del torneo actual (este es el que esté activo por la fecha `fechaInicio` y `fechaFin`). En caso de querer ver detalles de torneo pasados u otros torneos, hay que visitar la pestaña `Historico` donde se encuentra una lista de todos los torneos en los que el equipo ha participado.
+- La pestaña `Torneos` se muestra un histórico de todos los torneos.

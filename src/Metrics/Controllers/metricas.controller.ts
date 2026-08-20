@@ -34,5 +34,9 @@ export function metricasRoutes(proyeccion: ProyeccionService, consultas: Consult
     app.get<{ Params: { torneoId: string } }>('/torneos/:torneoId/clasificacion', async (req) =>
       consultas.clasificacion(req.params.torneoId),
     );
+    // Las filas de clasificación de un equipo en todos sus torneos.
+    app.get<{ Params: { equipoId: string } }>('/equipos/:equipoId/clasificacion', async (req) =>
+      consultas.clasificacionDeEquipo(req.params.equipoId),
+    );
   };
 }

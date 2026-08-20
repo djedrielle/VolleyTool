@@ -27,4 +27,13 @@ export class DrizzleClasificacionRepo implements ClasificacionEscritura, Clasifi
       .orderBy(desc(clasificacion.puntos), desc(clasificacion.setsFavor));
     return filas.map(({ calculadoEn: _omit, ...f }) => f);
   }
+
+  // Todas las filas de un equipo, una por torneo en el que tiene resultados.
+  async deEquipo(equipoId: string): Promise<FilaClasificacion[]> {
+    const filas = await this.db
+      .select()
+      .from(clasificacion)
+      .where(eq(clasificacion.equipoId, equipoId));
+    return filas.map(({ calculadoEn: _omit, ...f }) => f);
+  }
 }
