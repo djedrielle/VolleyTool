@@ -1,5 +1,6 @@
 import { useParams, Link } from 'react-router';
 import { useEquipo } from './useEquipo';
+import { TorneoActual } from './TorneoActual';
 import type { CSSProperties } from 'react';
 
 export function PaginaEquipo() {
@@ -32,13 +33,14 @@ export function PaginaEquipo() {
                     <div>
                         <div className="migas">
                             <Link to="/equipos">Equipos</Link> / {equipo.categoria}
-                            <Link to="/torneos" className="chip">Histórico</Link>
+                            <Link to={`/equipos/${id}/historico`} className="chip">Histórico</Link>
                         </div>
                         <h1>{equipo.nombre}</h1>
                         {meta && <div className="ce-meta">{meta}</div>}
                     </div>
                 </div>
             </section>
+            <TorneoActual equipoId={id!} />
         </main>
     );
 }

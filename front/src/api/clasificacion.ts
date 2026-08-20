@@ -14,3 +14,7 @@ export type FilaClasificacion = {
 export function clasificacionDeTorneo(torneoId: string): Promise<FilaClasificacion[]> {
     return apiGet<FilaClasificacion[]>(`/metricas/torneos/${torneoId}/clasificacion`);
 }
+
+export function clasificacionDeEquipo(equipoId: string): Promise<FilaClasificacion[]> {
+    return apiGet<FilaClasificacion[]>(`/metricas/equipos/${equipoId}/clasificacion`);
+}

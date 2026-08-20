@@ -1,6 +1,7 @@
 import { Routes, Route, NavLink } from 'react-router'
 import { PaginaEquipos } from './features/equipos/PaginaEquipos'
 import { PaginaEquipo } from './features/equipos/PaginaEquipo'
+import { PaginaHistorico } from './features/equipos/PaginaHistorico'
 import { PaginaTorneos } from './features/torneos/PaginaTorneos'
 import { PaginaTorneo } from './features/torneos/PaginaTorneo'
 
@@ -23,6 +24,7 @@ function App() {
         <Route path="/" element={<h1> Volleyball Costa Rica</h1>} />
         <Route path="/equipos" element={<PaginaEquipos />} />
         <Route path="/equipos/:id" element={<PaginaEquipo />} />
+        <Route path="/equipos/:id/historico" element={<PaginaHistorico />} />
         <Route path="/torneos" element={<PaginaTorneos />} />
         <Route path="/torneos/:id" element={<PaginaTorneo />} />
       </Routes>
