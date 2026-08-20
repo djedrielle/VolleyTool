@@ -8,3 +8,4 @@ export * from './partido.js';
 export * from './partido-equipo.js';
 export * from './plantilla.js';
 export * from './plantilla-tecnico.js';
+export * from './usuario.js';

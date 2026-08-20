@@ -20,11 +20,17 @@ import { plantillaRoutes } from './Controllers/plantilla.controller.js';
 import { PlantillaTecnicoService } from './Logic/administracion/plantilla-tecnico.service.js';
 import { DrizzlePlantillaTecnicoRepo } from './Data/repos/plantilla-tecnico.repo.js';
 import { plantillaTecnicoRoutes } from './Controllers/plantilla-tecnico.controller.js';
+import { IdentidadService } from './Logic/identidad/identidad.service.js';
+import { DrizzleUsuarioRepo } from './Data/repos/usuario.repo.js';
+import { authRoutes } from './Controllers/auth.controller.js';
 
 // Composición del dominio Core: crea los repos reales, los inyecta en
 // los servicios y monta las rutas como plugins de Fastify. Único lugar
 // donde se decide qué implementación concreta usa cada servicio.
 export async function registrarCore(app: FastifyInstance): Promise<void> {
+  await app.register(authRoutes(new IdentidadService(new DrizzleUsuarioRepo())), {
+    prefix: '/auth',
+  });
   await app.register(equipoRoutes(new EquipoService(new DrizzleEquipoRepo())), {
     prefix: '/equipos',
   });

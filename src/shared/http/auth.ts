@@ -1,5 +1,6 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import type { Rol } from '../../Core/Logic/identidad/roles.js';
+import { verificarToken } from './jwt.js';
 
 // Usuario autenticado que se adjunta a cada petición.
 export interface UsuarioAutenticado {
@@ -14,23 +15,18 @@ declare module 'fastify' {
   }
 }
 
-// Hook global: extrae el usuario del JWT y lo adjunta a la petición.
-//
-// TODO(auth): verificar la FIRMA del token contra el proveedor elegido
-// (Supabase u otro) cuando se decida. Por ahora solo decodifica las
-// claims SIN validar la firma — sirve para desarrollar el resto del
-// sistema, pero NO debe usarse así en producción.
+// Hook global: verifica la FIRMA del token y adjunta el usuario a la
+// petición. Un token ausente, inválido o expirado deja la petición sin
+// usuario; los guards (requireRole) frenan lo que esté protegido, y lo
+// público sigue accesible.
 export async function autenticar(req: FastifyRequest, _reply: FastifyReply): Promise<void> {
   const header = req.headers.authorization;
   if (!header?.startsWith('Bearer ')) return;
-  const token = header.slice(7);
   try {
-    const claims = JSON.parse(
-      Buffer.from(token.split('.')[1] ?? '', 'base64url').toString(),
-    );
-    req.usuario = { id: claims.sub, rol: claims.rol, alcance: claims.alcance ?? null };
+    const claims = await verificarToken(header.slice(7));
+    req.usuario = { id: claims.sub, rol: claims.rol, alcance: claims.alcance };
   } catch {
-    // Token ilegible → la petición queda sin usuario y los guards la frenan.
+    // Firma inválida o token expirado → sin usuario.
   }
 }
 

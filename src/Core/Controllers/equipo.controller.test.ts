@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { firmarToken } from '../../shared/http/jwt.js';
 import Fastify from 'fastify';
 import { configurarApp } from '../../app.js';
 import { equipoRoutes } from './equipo.controller.js';
@@ -36,9 +37,13 @@ class RepoFalso implements EquipoRepo {
 
 // Token de prueba: header.payload.firma con el payload en base64url.
 // autenticar() todavía no verifica la firma, así que basta el payload.
+const TOKENS: Record<string, string> = {
+  usuario_normal: `Bearer ${await firmarToken({ sub: 'u1', rol: 'usuario_normal', alcance: null })}`,
+  capturador: `Bearer ${await firmarToken({ sub: 'u1', rol: 'capturador', alcance: null })}`,
+  administrador: `Bearer ${await firmarToken({ sub: 'u1', rol: 'administrador', alcance: null })}`,
+};
 function bearer(rol: string): string {
-  const payload = Buffer.from(JSON.stringify({ sub: 'u1', rol })).toString('base64url');
-  return `Bearer x.${payload}.y`;
+  return TOKENS[rol]!;
 }
 
 async function appDePrueba() {

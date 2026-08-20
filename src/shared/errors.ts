@@ -15,3 +15,12 @@ export class NoEncontrado extends Error {
     this.name = 'NoEncontrado';
   }
 }
+
+// Credenciales de login inválidas → 401. Mensaje genérico a propósito:
+// no revela si el problema fue el correo o la contraseña.
+export class CredencialesInvalidas extends Error {
+  constructor() {
+    super('Correo o contraseña incorrectos');
+    this.name = 'CredencialesInvalidas';
+  }
+}

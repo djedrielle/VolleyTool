@@ -54,6 +54,26 @@ CREATE TYPE metrics.resultado_accion AS ENUM (
 );
 
 
+/* Roles del sistema. La autenticacion (login) la maneja Core; la
+   autorizacion por rol la aplican los guards de cada ruta. */
+CREATE TYPE metrics.rol AS ENUM ('usuario_normal', 'capturador', 'administrador');
+
+
+/* ============================ IDENTIDAD ============================ */
+
+/* Usuarios que pueden entrar. El hash de la contrasena lo calcula la app
+   (scrypt); `alcance` es el equipo al que se limita un capturador
+   (null = global). */
+CREATE TABLE metrics.usuario (
+  id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  email            text NOT NULL UNIQUE,
+  hash_contrasena  text NOT NULL,
+  rol              metrics.rol NOT NULL DEFAULT 'usuario_normal',
+  alcance          uuid,
+  creado_en        timestamptz NOT NULL DEFAULT now()
+);
+
+
 /* ============================ 1. CATALOGO ============================ */
 
 CREATE TABLE metrics.equipo (

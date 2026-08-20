@@ -25,3 +25,4 @@ export const lateralidad = metrics.enum('lateralidad', [
   'izquierda',
   'ambidiestro',
 ]);
+export const rol = metrics.enum('rol', ['usuario_normal', 'capturador', 'administrador']);

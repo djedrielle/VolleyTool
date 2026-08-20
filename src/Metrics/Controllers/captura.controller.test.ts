@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { firmarToken } from '../../shared/http/jwt.js';
 import Fastify, { type FastifyInstance } from 'fastify';
 import { configurarApp } from '../../app.js';
 import { capturaRoutes } from './captura.controller.js';
@@ -105,9 +106,13 @@ class ProyectorFalso implements Proyector {
   }
 }
 
+const TOKENS: Record<string, string> = {
+  usuario_normal: `Bearer ${await firmarToken({ sub: 'u1', rol: 'usuario_normal', alcance: null })}`,
+  capturador: `Bearer ${await firmarToken({ sub: 'u1', rol: 'capturador', alcance: null })}`,
+  administrador: `Bearer ${await firmarToken({ sub: 'u1', rol: 'administrador', alcance: null })}`,
+};
 function bearer(rol: string): string {
-  const payload = Buffer.from(JSON.stringify({ sub: 'u1', rol })).toString('base64url');
-  return `Bearer x.${payload}.y`;
+  return TOKENS[rol]!;
 }
 
 async function montar() {

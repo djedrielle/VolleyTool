@@ -1,7 +1,7 @@
 import Fastify, { type FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import { autenticar } from './shared/http/auth.js';
-import { ErrorValidacion, NoEncontrado } from './shared/errors.js';
+import { ErrorValidacion, NoEncontrado, CredencialesInvalidas } from './shared/errors.js';
 import { registrarCore } from './Core/index.js';
 import { registrarMetrics } from './Metrics/index.js';
 
@@ -27,6 +27,7 @@ export function configurarApp(app: FastifyInstance): void {
     if (err instanceof ErrorValidacion)
       return reply.code(400).send({ error: err.message, detalles: err.detalles });
     if (err instanceof NoEncontrado) return reply.code(404).send({ error: err.message });
+    if (err instanceof CredencialesInvalidas) return reply.code(401).send({ error: err.message });
 
     // Violaciones de restricciones de Postgres (SQLSTATE) → HTTP amigable.
     const codigoSql = codigoSqlState(err);
