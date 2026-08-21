@@ -54,8 +54,13 @@ export async function buildApp(): Promise<FastifyInstance> {
   configurarApp(app);
   // Sin esto el navegador bloquea las llamadas del front (otro origen:
   // :5173 → :3000). `origin: true` refleja el origen que pide; en
-  // producción se restringe al dominio real.
-  await app.register(cors, { origin: true });
+  // producción se restringe al dominio real. Los métodos hay que
+  // enumerarlos: por defecto el plugin solo deja pasar GET/HEAD/POST, y
+  // la alineación se declara con PUT.
+  await app.register(cors, {
+    origin: true,
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  });
   app.get('/health', async () => ({ status: 'ok' }));
   await registrarCore(app);
   await registrarMetrics(app);

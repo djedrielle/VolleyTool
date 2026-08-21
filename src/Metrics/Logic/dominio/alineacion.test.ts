@@ -135,6 +135,25 @@ describe('rotacionRelativa', () => {
     expect(rotacionRelativa('e1', acciones)).toBe(4);
     expect(rotacionRelativa('e2', acciones)).toBe(4);
   });
+
+  // Capturando un solo equipo, el saque del rival no queda registrado:
+  // el set arranca con nuestra recepción. Aun así el primer punto
+  // nuestro es un side-out y tiene que rotarnos.
+  it('rota cuando el set abre recibiendo, sin el saque del rival en el registro', () => {
+    const acciones = [
+      acc({ id: 'r1', rally: 1, equipoId: 'e1', tipo: 'recepcion', resultado: 'perfecta' }),
+      acc({
+        id: 'p1',
+        rally: 1,
+        ordenEnRally: 2,
+        equipoId: 'e1',
+        tipo: 'ataque',
+        resultado: 'punto_directo',
+        puntoParaEquipoId: 'e1',
+      }),
+    ];
+    expect(rotacionRelativa('e1', acciones)).toBe(2);
+  });
 });
 
 describe('rotacionActual anclada al armador', () => {

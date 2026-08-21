@@ -69,12 +69,16 @@ export function validarAlineacion(jugadores: JugadorAlineado[]): string[] {
   return errores;
 }
 
-// Quién abre el saque del set. Normalmente es la primera acción de
-// saque; si el capturador todavía no la registró, se asume que abrió el
-// equipo de la primera acción que haya.
+// Quién abre el saque del set, según la PRIMERA acción: si es un saque,
+// lo abrió ese equipo; si es cualquier otra cosa (una recepción, por
+// ejemplo), el set lo abrió sacando el otro. Devolver null en ese caso
+// es a propósito: cuando se captura un solo equipo no tenemos el id del
+// rival, y no hace falta: alcanza con que "el que saca" no sea el que
+// recibe, para que el primer punto cuente como side-out.
 function equipoQueAbre(acciones: Accion[]): string | null {
-  const saque = acciones.find((a) => a.tipo === 'saque');
-  return saque?.equipoId ?? acciones[0]?.equipoId ?? null;
+  const primera = acciones[0];
+  if (!primera) return null;
+  return primera.tipo === 'saque' ? primera.equipoId : null;
 }
 
 // Cuántas veces rotó el equipo desde el arranque del set. Un equipo rota
